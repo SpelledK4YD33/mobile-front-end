@@ -4,7 +4,7 @@ import { ParkingSpot } from '@/types/parking';
 // Configure your Spring Boot backend URL
 
 //CHANGE THIS TO YO DEVICE'S CURRENT IP
-const BASE_URL = 'http://192.168.8.30:8080/firstParkingBackEnd';
+export const BASE_URL = 'http://localhost:8080/firstParkingBackEnd';
 
 // Create axios instance with default config
 const api = axios.create({

@@ -27,7 +27,7 @@ export default function ParkingSpotGrid({ spots, onSpotPress }: ParkingSpotGridP
     </TouchableOpacity>
   );
 
-  // Group spots by sections (assuming naming convention like A1, A2, B1, B2, etc.)
+  
   const groupedSpots = spots.reduce((acc, spot) => {
     const section = spot.parkingSpotName.charAt(0);
     if (!acc[section]) {

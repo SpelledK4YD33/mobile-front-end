@@ -5,6 +5,28 @@ import { parkingService } from '@/services/parkingService';
 import { ParkingSpot } from '@/types/parking';
 import ParkingSpotGrid from '@/components/ParkingSpotGrid';
 
+const SECTION_NAMES_B1 = [
+  'IJARAH AVENUE(VIP)',
+    'FIRST STREET(VIP)',
+    'LORATO NTAKHWANA AVENUE',
+    'FUN STREET',
+    'LESEDI STREET',
+    'BOOGEYMAN STREET',
+    'WALK OF FAME AVENUE',
+    'MODIRI STREET',
+    'KGWARI AVENUE'
+];
+
+const SECTION_NAMES_B2 = [
+   'BANK ON WHEELS STREET',
+    'MOGWEBI STREET',
+    '*174# AVENUE',
+    'MOEMEDI STREET',
+    'FOUNDATION AVENUE',
+    'POLOKO AVENUE',
+    'HEEIA STREET',
+];
+
 export default function MapScreen() {
   const [selectedBasement, setSelectedBasement] = useState<1 | 2>(1);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -13,6 +35,7 @@ export default function MapScreen() {
   const [isConnected, setIsConnected] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [expandedSections, setExpandedSections] = useState<number[]>([]);
 
   const fetchParkingData = async (showLoading = true) => {
     if (showLoading) {
@@ -53,7 +76,7 @@ export default function MapScreen() {
   useEffect(() => {
     const interval = setInterval(() => {
       fetchParkingData(false);
-    }, 15000);
+    }, 5000);
     return () => clearInterval(interval);
   }, []);
 
@@ -75,7 +98,30 @@ export default function MapScreen() {
     return parkingSpots.filter(spot => spot.parkingSpotName.includes(`Zone B${basement}`));
   };
 
+  // Split spots into sections of 24 with unique names per basement
+  const getSectionedSpots = (spots: ParkingSpot[], basement: number) => {
+    const sectionNames = basement === 1 ? SECTION_NAMES_B1 : SECTION_NAMES_B2;
+    const sections: { label: string; spots: ParkingSpot[] }[] = [];
+    for (let i = 0; i < spots.length; i += 24) {
+      sections.push({
+        label: sectionNames[i / 24] || `Section ${Math.floor(i / 24) + 1}`,
+        spots: spots.slice(i, i + 24),
+      });
+    }
+    return sections;
+  };
+
+  // Toggle section collapse/expand
+  const toggleSection = (idx: number) => {
+    setExpandedSections(prev =>
+      prev.includes(idx)
+        ? prev.filter(i => i !== idx)
+        : [...prev, idx]
+    );
+  };
+
   const currentSpots = getBasementSpots(selectedBasement);
+  const sections = getSectionedSpots(currentSpots, selectedBasement);
   const currentAvailable = currentSpots.filter(spot => !spot.isReserved).length;
   const totalSpots = currentSpots.length;
 
@@ -88,6 +134,7 @@ export default function MapScreen() {
     return date.toLocaleTimeString();
   };
 
+  // @ts-ignore
   return (
     <ScrollView style={styles.container}>
       {/* Header */}
@@ -206,11 +253,45 @@ export default function MapScreen() {
               <View style={styles.entryCircle} />
               <Text style={styles.entryText}>Entry</Text>
             </View>
-            {/* Parking Spots Grid */}
-            <ParkingSpotGrid
-              spots={currentSpots}
-              onSpotPress={handleSpotPress}
-            />
+            {/* Parking Spots Sections */}
+            {sections.map((section, idx) => {
+              // Custom colors for first and second sections only
+              const customSpotStyles =
+                idx === 0 || idx === 1
+                  ? {
+                      occupiedColor: '#000',      // black
+                      unoccupiedColor: '#009999', // teal
+                    }
+                  : undefined;
+
+              return (
+                <View key={idx} style={{ marginBottom: 24 }}>
+                  <TouchableOpacity
+                    onPress={() => toggleSection(idx)}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      marginBottom: 8,
+                    }}
+                  >
+                    <Text style={{ fontWeight: 'bold', fontSize: 16 }}>
+                      {section.label}
+                    </Text>
+                    <Text style={{ marginLeft: 8, color: '#009999', fontSize: 16 }}>
+                      {expandedSections.includes(idx) ? '▼' : '▶'}
+                    </Text>
+                  </TouchableOpacity>
+                  {expandedSections.includes(idx) && (
+                    <ParkingSpotGrid
+                      spots={section.spots}
+                      onSpotPress={handleSpotPress}
+                      occupiedColor={customSpotStyles?.occupiedColor}
+                      unoccupiedColor={customSpotStyles?.unoccupiedColor}
+                    />
+                  )}
+                </View>
+              );
+            })}
             {/* Exit Point */}
             <View style={styles.exitPoint}>
               <Text style={styles.exitText}>Exit</Text>
@@ -245,92 +326,60 @@ export default function MapScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: '#f8f9fa',
+    flexGrow: 1,
+    padding: 20,
+    paddingTop: 50,
+    backgroundColor: '#fff',
   },
   header: {
-    backgroundColor: '#009999',
-    paddingTop: 60,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 20,
+    backgroundColor: '#009999',
+    padding: 10,
+    borderRadius: 8,
   },
   backButton: {
-    padding: 8,
+    padding: 5,
   },
   headerCenter: {
     flex: 1,
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#fff',
-    marginBottom: 2,
   },
   connectionStatus: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginTop: 4,
   },
   connectionText: {
     fontSize: 12,
     marginLeft: 4,
-    fontWeight: '600',
+    fontWeight: '500',
+    color: '#fff',
   },
   refreshButton: {
-    padding: 8,
+    padding: 5,
   },
-  spinning: {
-    // Add rotation animation here if needed
-  },
-  errorBanner: {
-    backgroundColor: '#ffebee',
-    marginHorizontal: 20,
-    marginTop: 10,
-    padding: 16,
-    borderRadius: 8,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderLeftWidth: 4,
-    borderLeftColor: '#f44336',
-  },
-  errorText: {
-    color: '#c62828',
-    fontSize: 14,
-    flex: 1,
-  },
-  retryButton: {
-    backgroundColor: '#f44336',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 4,
-  },
-  retryText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: '600',
-  },
+
+  // Toggle (Basement Selection)
   toggleContainer: {
     flexDirection: 'row',
-    margin: 20,
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    justifyContent: 'center',
+    marginBottom: 20,
   },
   toggleButton: {
-    flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 6,
-    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#009999',
+    marginHorizontal: 5,
   },
   activeToggle: {
     backgroundColor: '#009999',
@@ -340,32 +389,35 @@ const styles = StyleSheet.create({
   },
   toggleText: {
     fontSize: 14,
-    fontWeight: '600',
   },
   activeToggleText: {
     color: '#fff',
+    fontWeight: 'bold',
   },
   inactiveToggleText: {
-    color: '#666',
+    color: '#009999',
   },
+
+  // Stats Card
   statsContainer: {
-    paddingHorizontal: 20,
-    marginBottom: 16,
+    backgroundColor: '#f9f9f9',
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 20,
   },
   statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 10,
   },
   statsText: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: 'bold',
   },
   lastUpdatedText: {
     fontSize: 12,
-    color: '#666',
+    color: '#999',
   },
   progressBar: {
     height: 6,
@@ -376,18 +428,17 @@ const styles = StyleSheet.create({
   progressFill: {
     height: '100%',
     backgroundColor: '#009999',
-    borderRadius: 3,
   },
+
+  // Legend
   legend: {
     flexDirection: 'row',
-    justifyContent: 'center',
+    justifyContent: 'space-around',
     marginBottom: 20,
-    paddingHorizontal: 20,
   },
   legendItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginHorizontal: 16,
   },
   legendBox: {
     width: 16,
@@ -397,7 +448,7 @@ const styles = StyleSheet.create({
   },
   legendText: {
     fontSize: 14,
-    color: '#666',
+    color: '#555',
   },
   availableSpot: {
     backgroundColor: '#4CAF50',
@@ -405,16 +456,13 @@ const styles = StyleSheet.create({
   occupiedSpot: {
     backgroundColor: '#f44336',
   },
+
+  // Map Area
   mapContainer: {
-    backgroundColor: '#fff',
-    margin: 20,
+    backgroundColor: '#f9f9f9',
     borderRadius: 12,
     padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    marginBottom: 20,
     minHeight: 300,
   },
   entryPoint: {
@@ -453,15 +501,40 @@ const styles = StyleSheet.create({
     borderRightColor: 'transparent',
     borderTopColor: '#f44336',
   },
-  noDataContainer: {
+
+  // Error + No Data
+  errorBanner: {
+    backgroundColor: '#ffe5e5',
+    padding: 10,
+    borderRadius: 6,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  errorText: {
+    color: '#d32f2f',
+    fontSize: 14,
     flex: 1,
-    justifyContent: 'center',
+  },
+  retryButton: {
+    backgroundColor: '#d32f2f',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 4,
+  },
+  retryText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  noDataContainer: {
     alignItems: 'center',
     paddingVertical: 40,
   },
   noDataText: {
     fontSize: 16,
-    color: '#666',
+    color: '#999',
     textAlign: 'center',
     marginBottom: 16,
   },
@@ -476,30 +549,24 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
+
+  // Info Section
   infoCard: {
-    backgroundColor: '#fff',
-    margin: 20,
+    backgroundColor: '#f9f9f9',
     padding: 16,
     borderRadius: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
   },
   infoTitle: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#333',
     marginBottom: 4,
   },
   infoText: {
     fontSize: 12,
     color: '#666',
-    marginBottom: 2,
   },
   infoSubtext: {
     fontSize: 11,
-    color: '#999',
+    color: '#aaa',
   },
 });

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { Car, RefreshCw, Wifi, WifiOff } from 'lucide-react-native';
 import { parkingService } from '@/services/parkingService';
@@ -131,91 +131,184 @@ export default function HomeScreen() {
     </ScrollView>
   );
 }
+ const styles = StyleSheet.create({
+   container: {
+     flex: 1,
+     backgroundColor: '#fff',
+   },
+   contentContainer: {
+     paddingBottom: 20,
+   },
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f8f9fa' },
-  contentContainer: { paddingBottom: 20 },
-  header: {
-    backgroundColor: '#009999',
-    paddingTop: 60,
-    paddingHorizontal: 20,
-    paddingBottom: 30,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  logoContainer: { flexDirection: 'row', alignItems: 'center' },
-  logo: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: '#fff',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 15,
-  },
-  logoIcon: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: '#f0f9ff',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  appTitle: { fontSize: 24, fontWeight: 'bold', color: '#fff', marginBottom: 4 },
-  connectionStatus: { flexDirection: 'row', alignItems: 'center' },
-  connectionText: { fontSize: 12, marginLeft: 4, fontWeight: '600' },
-  refreshButton: { padding: 12, backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 24 },
-  errorBanner: {
-    backgroundColor: '#ffebee',
-    margin: 20,
-    padding: 16,
-    borderRadius: 8,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderLeftWidth: 4,
-    borderLeftColor: '#f44336',
-  },
-  errorText: { color: '#c62828', fontSize: 14, flex: 1 },
-  retryButton: { backgroundColor: '#f44336', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 4 },
-  retryText: { color: '#fff', fontSize: 12, fontWeight: '600' },
-  statusCard: {
-    backgroundColor: '#fff',
-    margin: 20,
-    padding: 24,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  statusTitle: { fontSize: 16, color: '#666', marginBottom: 12 },
-  statusRow: { flexDirection: 'row', alignItems: 'baseline', marginBottom: 16 },
-  availableCount: { fontSize: 32, fontWeight: 'bold' },
-  totalCount: { fontSize: 20, color: '#999', marginLeft: 4 },
-  statusBar: { height: 8, backgroundColor: '#e0e0e0', borderRadius: 4, overflow: 'hidden', marginBottom: 8 },
-  statusFill: { height: '100%', borderRadius: 4 },
-  basementSection: { paddingHorizontal: 20 },
-  sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#333', marginBottom: 16 },
-  basementCard: {
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 12,
-    marginBottom: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  basementIcon: { width: 48, height: 48, borderRadius: 12, backgroundColor: '#009999', justifyContent: 'center', alignItems: 'center', marginRight: 16 },
-  basementInfo: { flex: 1 },
-  basementTitle: { fontSize: 16, fontWeight: 'bold', color: '#333', marginBottom: 4 },
-  basementSubtitle: { fontSize: 14, color: '#666' },
-  basementArrow: { paddingLeft: 12 },
-  arrowText: { fontSize: 18, color: '#009999', fontWeight: 'bold' },
-});
+   // Header
+   header: {
+     backgroundColor: '#009999',
+     paddingTop: 60,
+     paddingHorizontal: 20,
+     paddingBottom: 20,
+     flexDirection: 'row',
+     justifyContent: 'space-between',
+     alignItems: 'center',
+   },
+   logoContainer: {
+     flexDirection: 'row',
+     alignItems: 'center',
+   },
+   logo: {
+     width: 60,
+     height: 60,
+     borderRadius: 30,
+     backgroundColor: '#fff',
+     justifyContent: 'center',
+     alignItems: 'center',
+     marginRight: 15,
+   },
+   logoIcon: {
+     width: 50,
+     height: 50,
+     borderRadius: 25,
+     backgroundColor: '#f0f9ff',
+     justifyContent: 'center',
+     alignItems: 'center',
+   },
+   appTitle: {
+     fontSize: 20,
+     fontWeight: 'bold',
+     color: '#fff',
+     marginBottom: 4,
+   },
+   connectionStatus: {
+     flexDirection: 'row',
+     alignItems: 'center',
+   },
+   connectionText: {
+     fontSize: 12,
+     marginLeft: 4,
+     fontWeight: '500',
+     color: '#fff',
+   },
+   refreshButton: {
+     padding: 8,
+     backgroundColor: 'rgba(255,255,255,0.2)',
+     borderRadius: 20,
+   },
+
+   // Error
+   errorBanner: {
+     backgroundColor: '#ffe5e5',
+     margin: 20,
+     padding: 12,
+     borderRadius: 8,
+     flexDirection: 'row',
+     justifyContent: 'space-between',
+     alignItems: 'center',
+     borderLeftWidth: 4,
+     borderLeftColor: '#f44336',
+   },
+   errorText: {
+     color: '#c62828',
+     fontSize: 14,
+     flex: 1,
+   },
+   retryButton: {
+     backgroundColor: '#f44336',
+     paddingHorizontal: 12,
+     paddingVertical: 6,
+     borderRadius: 6,
+   },
+   retryText: {
+     color: '#fff',
+     fontSize: 12,
+     fontWeight: '600',
+   },
+
+   // Parking Status
+   statusCard: {
+     backgroundColor: '#f9f9f9',
+     marginHorizontal: 20,
+     marginTop: 20,
+     padding: 20,
+     borderRadius: 12,
+   },
+   statusTitle: {
+     fontSize: 16,
+     color: '#333',
+     marginBottom: 12,
+     fontWeight: '600',
+   },
+   statusRow: {
+     flexDirection: 'row',
+     alignItems: 'flex-end',
+     marginBottom: 16,
+   },
+   availableCount: {
+     fontSize: 32,
+     fontWeight: 'bold',
+   },
+   totalCount: {
+     fontSize: 20,
+     color: '#999',
+     marginLeft: 4,
+   },
+   statusBar: {
+     height: 8,
+     backgroundColor: '#e0e0e0',
+     borderRadius: 4,
+     overflow: 'hidden',
+   },
+   statusFill: {
+     height: '100%',
+     borderRadius: 4,
+     backgroundColor: '#009999',
+   },
+
+   // Basement List
+   basementSection: {
+     paddingHorizontal: 20,
+     marginTop: 20,
+   },
+   sectionTitle: {
+     fontSize: 18,
+     fontWeight: 'bold',
+     color: '#333',
+     marginBottom: 16,
+   },
+   basementCard: {
+     backgroundColor: '#f9f9f9',
+     padding: 16,
+     borderRadius: 12,
+     marginBottom: 12,
+     flexDirection: 'row',
+     alignItems: 'center',
+   },
+   basementIcon: {
+     width: 48,
+     height: 48,
+     borderRadius: 12,
+     backgroundColor: '#009999',
+     justifyContent: 'center',
+     alignItems: 'center',
+     marginRight: 16,
+   },
+   basementInfo: {
+     flex: 1,
+   },
+   basementTitle: {
+     fontSize: 16,
+     fontWeight: '600',
+     color: '#333',
+     marginBottom: 4,
+   },
+   basementSubtitle: {
+     fontSize: 14,
+     color: '#666',
+   },
+   basementArrow: {
+     paddingLeft: 12,
+   },
+   arrowText: {
+     fontSize: 18,
+     color: '#009999',
+     fontWeight: 'bold',
+   },
+ });
